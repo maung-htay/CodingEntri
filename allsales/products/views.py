@@ -8,7 +8,7 @@ from .models import Product
 from .ProductSerializer import ProductSerializer
 
 # Generic
-from rest_framework import generics
+from rest_framework import generics, mixins
 
 
 class ProductListCreateApiView(generics.ListCreateAPIView):
@@ -97,6 +97,49 @@ def product_alt_view(request, pk=None, *args, **kwargs):
             serializer.save(content=content)
             return Response(serializer.data)
         return Response({'msg': 'Error occur'}, status=404)
+
+
+# Mixing View
+class ModelMixinView(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView
+):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    # permission_classes = IsAdminUser
+
+    def get(self, request, *args, **kwargs):
+        print(kwargs)
+        pk = kwargs.get('pk')
+        if pk is not None:
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        # print(serializer.validated_data)
+        title = serializer.validated_data.get('title')
+        content = serializer.validated_data.get('content') or None
+        if content is None:
+            content = 'This is mixing view example'
+        serializer.save(content=content)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+model_mixin_view = ModelMixinView.as_view()
 
 
 @api_view(['GET'])

@@ -1,6 +1,7 @@
 import requests
 
 endpoint = 'http://127.0.0.1:8000/api/generic/1/delete/'
+endpoint = 'http://127.0.0.1:8000/api/mixins/2/delete/'
 # data = {'title': 'Hello 3', 'price': 10.5}
 get_response = requests.delete(endpoint)
 
